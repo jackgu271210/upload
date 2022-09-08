@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>图片上传</title>
+    <link rel="stylesheet" th:href="@{/webjars/layui/2.5.7/css/layui.css}">
+    <link rel="stylesheet" th:href="@{/index.css}">
+    <script th:src="@{/webjars/layui/2.5.7/layui.js}"></script>
+</head>
+<body>
+    <header>
+        基于LayUI的图片上传并回显的功能
+    </header>
+    <div class="layui-container">
+        <div class="layui-row">
+            <form class="layui-form" action="">
+                <!-- 设置一个隐藏域 -->
+                <input type="hidden" id="goodsImage" name="goodsImage" valve="">
+                <div class="layui-form-item layui-form-text">
+                    <label class="layui-form-label">图片描述</label>
+                    <div class="layui-input-block">
+                        <textarea name="imageDescribe" placeholder="请输入图片的信息" class="layui-textarea"></textarea>
+                    </div>
+                </div>
+                <div class="layui-form-item layui-form-text">
+                    <label class="layui-form-label">上传按钮</label>
+                    <div class="layui-input-block">
+                        <button type="button" class="layui-btn" id="upload-button">
+                            <i class="layui-icon">&#xe67c;</i>上传图片
+                        </button>
+                    </div>
+                </div>
+                <div class="layui-form-item layui-form-text">
+                    <label class="layui-form-label">图片预览</label>
+                    <div class="layui-input-block">
+                        <img id="image" alt="" style="width: 300px; height: 300px;">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <div class="layui-input-block">
+                        <button class="layui-btn" lay-submit lay-filter="formDemo">立即提交</button>
+                        <button type="reset" class="layui-btn layui-btn-primary">重置</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</body>
+</html>
+<script>
+    //如果你要用layui提供的form,这部分必须写上
+    layui.use('form', function(){
+        let form = layui.form;
+        let $ = layui.$;
+        //监听提交
+        form.on('submit(formDemo)', function(data){
+            $.ajax({
+                url:"/upload/addImage",
+                method: "post",
+                data: data.field,
+                dataType: "JSON",
+                success: function(res) {
+                    if (res == 1) {
+                        layer.msg("已经成功添加到数据库中");
+                    }
+                }
+            })
+            return false;
+        });
+    });
+
+    layui.use('upload', function(){
+        let upload = layui.upload;
+        let $ = layui.$;
+        //执行实例
+        let uploadInst = upload.render({
+            elem: '#upload-button' //绑定元素
+            ,url: '/upload/image' //上传接口
+            ,done: function(res){
+                if (res.code == 1) {
+                    //成功了
+                    layer.msg(res.msg);
+                    //首先我们要获得，我们上传之后的图片访问路径
+                    let imagePath = res.data.src;
+                    console.log(imagePath);
+                    $('#image').attr("src",imagePath);
+                    $('#goodsImage').attr("value",imagePath);
+                }else{
+                    layer.msg(res.msg);
+                }
+            }
+            ,error: function(){
+                //失败了
+            }
+        });
+    });
+</script>
